@@ -1,18 +1,22 @@
 This is provided as a proof-of-concept and is not intended to actually be used to pass the cisco exams.
 Use this at your own risk.
 
+**This is unmaintained, you can find a more up-to-date alternative [here](https://git.euph.dev/Snoweuph/CCNA_Autofill_Userscript)**.
+
 # Install
 
 ## Chrome
-To install the extension in chrome go to chrome://extensions/ 
-and enable the Developer Mode in the upper right corner. 
-A button called "Load unpacked" will appear on the left side. 
-Click it and select the "extension" directory. 
+
+To install the extension in chrome go to chrome://extensions/
+and enable the Developer Mode in the upper right corner.
+A button called "Load unpacked" will appear on the left side.
+Click it and select the "extension" directory.
 Optionally move the extension into the chrome menu. (essentially hide it)
 
 ## Firefox
+
 To install the extension in firefox go to about:debugging#/runtime/this-firefox
-and click on "Load temporary Add-on..." in the upper right corner. 
+and click on "Load temporary Add-on..." in the upper right corner.
 Select the manifest.json in the "extension" directory.
 You need to repeat this process when you restart firefox. (it's temporary)
 
