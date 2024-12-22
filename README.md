@@ -1,7 +1,7 @@
 This is provided as a proof-of-concept and is not intended to actually be used to pass the cisco exams.
 Use this at your own risk.
 
-**This is unmaintained, you can find a more up-to-date alternative [here](https://git.euph.dev/Snoweuph/CCNA_Autofill_Userscript)**.
+**This is unmaintained, you can find a more up-to-date alternative [here](https://git.euph.dev/Userscripts/CCNA_Autofill)**.
 
 # Install
 
