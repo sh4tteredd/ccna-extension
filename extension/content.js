@@ -2,93 +2,68 @@ let answerUrl;
 let chapterData;
 
 function fetchChapterData() {
-    // Chapter answers are fetched by the background script because CORS sucks
-    chrome.runtime.sendMessage({type: "load", url: answerUrl}, data => {
-        console.table(data);
+  return new Promise((resolve, reject) => {
+    if (chapterData) return resolve(chapterData); // Avoid duplicate requests
+    chrome.runtime.sendMessage({ type: "load", url: answerUrl }, (data) => {
+      console.table(data);
+      if (data) {
         chapterData = data;
+        resolve(data);
+      } else {
+        reject(new Error("Failed to fetch chapter data."));
+      }
     });
+  });
 }
 
 function matchText(textA, textB) {
-    const replaceRegex = /[^\w]/gi;
-    textA = textA.replace(replaceRegex, "");
-    textB = textB.replace(replaceRegex, "");
-    return (textA === textB);
+  const replaceRegex = /[^\w]/gi;
+  textA = textA.replace(replaceRegex, "").toLowerCase();
+  textB = textB.replace(replaceRegex, "").toLowerCase();
+  return textA === textB;
 }
 
-
-function findAnswers(questionText, answers) {
-    if (chapterData === null) {
-        alert("No chapter data loaded. Maybe the fetch failed?!");
-        return [];
+function findEntryByQuestion(inputText, chapterData) {
+  for (let entry of chapterData) {
+    if (matchText(inputText, entry.question)) {
+      return entry;
     }
-
-    const correctAnswers = [];
-    for (let entry of chapterData) {
-        if (matchText(questionText.trim(), entry.question)) {
-            for (let availableAnswer of answers) {
-                for (let possibleAnswer of entry.answers) {
-                    if (matchText(availableAnswer.textContent.trim(), possibleAnswer)) {
-                        correctAnswers.push(availableAnswer);
-                    }
-                }
-            }
-        }
-    }
-
-    return correctAnswers;
+  }
+  return null;
 }
 
+async function handlePromptQuestion() {
+  const inputText = prompt("Enter the question:")?.trim();
+  if (!inputText) return;
 
-function processQuestion(question) {
-    const questionTextDom = question.querySelector(".questionText .mattext");
-    if (!questionTextDom) return;
-    const questionText = questionTextDom.textContent.trim();
-
-    const answersDom = question.querySelector("ul.coreContent");
-    if (!answersDom) return;
-    const answers = answersDom.children;
-
-    for (let answer of answers) {
-        const input = answer.querySelector("input");
-        if (!input) continue;
-        input.checked = false;
+  try {
+    const data = await fetchChapterData();
+    const entry = findEntryByQuestion(inputText, data);
+    if (!entry) {
+      alert("Question not found in the data.");
+      return;
     }
 
-    const correctAnswers = findAnswers(questionText, answers);
-    if (correctAnswers.length === 0) {
-        console.log("No answers found for this question. ;(");
-        return;
-    }
-
-    for (const answer of correctAnswers) {
-        const input = answer.querySelector("input");
-        if (!input) continue;
-        input.checked = true;
-    }
+    alert(`Correct answer(s):\n- ${entry.answers.join("\n- ")}`);
+  } catch (error) {
+    console.error("Error while fetching chapter data:", error);
+    alert("Error retrieving data.");
+  }
 }
 
-
-function clickNext() {
-    document.getElementById("next").click();
-}
-
-window.addEventListener("keydown", event => {
-    if (event.key === "a") {
-        // Inactive questions have the hidden class
-        const activeQuestion = document.querySelector(".question:not(.hidden)");
-        if (activeQuestion) {
-            processQuestion(activeQuestion);
-        }
-
-    } else if (event.key === "n") {
-        clickNext();
-
-    } else if (event.key === "p") {
-        chrome.storage.local.get(["lastUrl"], result => {
-            answerUrl = prompt("Please input the answer url (itexamanswers.net)", result.lastUrl);
-            chrome.storage.local.set({lastUrl: answerUrl});
-            fetchChapterData();
-        })
-    }
+window.addEventListener("keydown", (event) => {
+  if (event.key === "a") {
+    handlePromptQuestion();
+  } else if (event.key === "n") {
+    document.getElementById("next")?.click();
+  } else if (event.key === "p") {
+    chrome.storage.local.get(["lastUrl"], (result) => {
+      answerUrl = prompt(
+        "Please input the answer URL (itexamanswers.net)",
+        result.lastUrl
+      );
+      chrome.storage.local.set({ lastUrl: answerUrl });
+      fetchChapterData(); // Preload
+    });
+  }
 });
