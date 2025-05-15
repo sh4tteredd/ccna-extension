@@ -54,8 +54,6 @@ async function handlePromptQuestion() {
 window.addEventListener("keydown", (event) => {
   if (event.key === "a") {
     handlePromptQuestion();
-  } else if (event.key === "n") {
-    document.getElementById("next")?.click();
   } else if (event.key === "p") {
     chrome.storage.local.get(["lastUrl"], (result) => {
       answerUrl = prompt(
